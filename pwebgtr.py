@@ -10,7 +10,7 @@ data = resp.read().decode('utf-8')
 
 m = re.findall ( '<h3 (?:[^>=]|=\'[^\']*\'|="[^"]*"|=[^\'"][^\s>]*)*?>(.*?)</h3>', data, re.DOTALL|re.MULTILINE)
 
-f = open('workfile', 'w')
+f = open('kesintiler.txt', 'w')
 for item in m:
   f.write("%s\n" % item)
  
