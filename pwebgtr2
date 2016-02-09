@@ -1,0 +1,73 @@
+import urllib.request
+import ssl
+import re
+import codecs
+import pymysql
+
+import datetime
+import locale
+import time
+locale.setlocale(locale.LC_ALL, 'turkish')
+
+
+
+https_sslv3_handler = urllib.request.HTTPSHandler(context=ssl.SSLContext(ssl.PROTOCOL_SSLv3))
+opener = urllib.request.build_opener(https_sslv3_handler)
+urllib.request.install_opener(opener)
+
+resp = opener.open('https://www.toroslaredas.com.tr/Pages/Bilgilendirme/PlanliBakim/Planli-Kesinti-Listesi-ve-Haritasi.aspx')
+data = resp.read().decode('utf-8')
+
+m = re.findall ( '<h3 (?:[^>=]|=\'[^\']*\'|="[^"]*"|=[^\'"][^\s>]*)*?>(.*?)</h3>', data, re.DOTALL|re.MULTILINE)
+
+# vt bağlan
+baglanti = pymysql.connect(host = '127.0.0.1', user = 'root', passwd = '', db = 'python', charset='utf8')
+yaz = baglanti.cursor()
+
+
+f = codecs.open("kesintiler.xml", "w", "utf-8")
+  
+f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
+f.write('<body>\n')
+
+for item in m:
+    c = re.findall ('<span(?:[^>=]|=\'[^\']*\'|="[^"]*"|=[^\'"][^\s>]*)*?>(.*?)</span>', item, re.DOTALL|re.MULTILINE)
+
+    b = [];
+    
+    #tarih formatla
+    c[0] = (datetime.datetime.strptime(c[0].strip(), '%d %B %Y'))
+    b.append(c[0].strftime('%Y-%m-%d'))
+
+    #il/ilçe
+    il = c[1].split('/');
+    b.append(il[0])
+    b.append(il[1])
+
+    #saat aralığı
+    saat = c[2].split(" ");
+    b.append(saat[0])
+    b.append(saat[2])
+    
+    #xml oluştur
+    f.write('<item>\n')
+    f.write('\t<tarih>'+b[0]+'</tarih>\n')
+    f.write('\t<il>'+b[1]+'</il>\n')
+    f.write('\t<ilce>'+b[2]+'</ilce>\n')
+    f.write('\t<baslama>'+b[3]+'</baslama>\n')
+    f.write('\t<bitis>'+b[4]+'</bitis>\n')
+    f.write('</item>\n\n')
+    
+    # sorguyu gönderdik.
+    yaz.execute("insert into deneme (tarih,il,ilce,basla,bitis) VALUES (%s,%s,%s,%s,%s)", b)
+
+    
+f.write('</body>\n')
+f.write('</xml>')
+f.close()
+yaz.close()
+baglanti.close()
+
+
+
+print('İşlem Tamamlandı')
