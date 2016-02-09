@@ -1,0 +1,28 @@
+
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+SET time_zone = "+00:00";
+
+--
+-- Tablo için tablo yapısı `deneme`
+--
+
+CREATE TABLE IF NOT EXISTS `deneme` (
+  `id` int(11) NOT NULL,
+  `tarih` date NOT NULL,
+  `il` varchar(120) COLLATE utf8_turkish_ci NOT NULL,
+  `ilce` varchar(120) COLLATE utf8_turkish_ci NOT NULL,
+  `basla` time NOT NULL,
+  `bitis` time NOT NULL
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_turkish_ci;
+
+--
+-- Tablo için indeksler `deneme`
+--
+ALTER TABLE `deneme`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Tablo için AUTO_INCREMENT değeri `deneme`
+--
+ALTER TABLE `deneme`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
